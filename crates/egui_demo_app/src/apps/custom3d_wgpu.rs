@@ -41,7 +41,8 @@ impl Custom3d {
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("custom3d"),
             bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
+            //push_constant_ranges: &[],
+            immediate_size:0,
         });
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -62,8 +63,9 @@ impl Custom3d {
             primitive: wgpu::PrimitiveState::default(),
             depth_stencil: None,
             multisample: wgpu::MultisampleState::default(),
-            multiview: None,
+            //multiview: None,
             cache: None,
+            multiview_mask:None,
         });
 
         let uniform_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {

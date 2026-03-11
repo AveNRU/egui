@@ -539,6 +539,7 @@ impl Painter {
 
             let render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("egui_render"),
+                multiview_mask: None,   // <-- добавлено
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view,
                     resolve_target,

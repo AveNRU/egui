@@ -192,10 +192,11 @@ impl CCursorRange {
 
             Event::AccessKitActionRequest(accesskit::ActionRequest {
                 action: accesskit::Action::SetTextSelection,
-                target,
+                target_node,
+                                              target_tree,
                 data: Some(accesskit::ActionData::SetTextSelection(selection)),
             }) => {
-                if _widget_id.accesskit_id() == *target {
+                if _widget_id.accesskit_id() == *target_node {
                     let primary =
                         ccursor_from_accesskit_text_position(_widget_id, galley, &selection.focus);
                     let secondary =

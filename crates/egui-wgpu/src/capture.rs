@@ -47,7 +47,8 @@ impl CaptureState {
             },
             depth_stencil: None,
             multisample: MultisampleState::default(),
-            multiview: None,
+            //multiview: None,
+            multiview_mask: None,   // <-- добавлено
             cache: None,
         });
 
@@ -163,6 +164,7 @@ impl CaptureState {
                 depth_slice: None,
             })],
             depth_stencil_attachment: None,
+            multiview_mask: None,   // <-- добавлено
             occlusion_query_set: None,
             timestamp_writes: None,
         });

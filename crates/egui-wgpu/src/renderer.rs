@@ -353,7 +353,8 @@ impl Renderer {
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("egui_pipeline_layout"),
             bind_group_layouts: &[&uniform_bind_group_layout, &texture_bind_group_layout],
-            push_constant_ranges: &[],
+            immediate_size: 0,
+            //push_constant_ranges: &[],
         });
 
         let depth_stencil = options
@@ -384,6 +385,7 @@ impl Renderer {
                     }],
                     compilation_options: wgpu::PipelineCompilationOptions::default()
                 },
+
                 primitive: wgpu::PrimitiveState {
                     topology: wgpu::PrimitiveTopology::TriangleList,
                     unclipped_depth: false,
@@ -394,12 +396,12 @@ impl Renderer {
                     strip_index_format: None,
                 },
                 depth_stencil,
+                multiview_mask: None, // <-- добавлено
                 multisample: wgpu::MultisampleState {
                     alpha_to_coverage_enabled: false,
                     count: options.msaa_samples.max(1),
                     mask: !0,
                 },
-
                 fragment: Some(wgpu::FragmentState {
                     module: &module,
                     entry_point: Some(if output_color_format.is_srgb() {
@@ -426,10 +428,9 @@ impl Renderer {
                     })],
                     compilation_options: wgpu::PipelineCompilationOptions::default()
                 }),
-                multiview: None,
+                //multiview: None, // старое поле, удалить
                 cache: None,
-            }
-        )
+            })
         };
 
         const VERTEX_BUFFER_START_CAPACITY: wgpu::BufferAddress =
