@@ -3,36 +3,157 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 #![allow(rustdoc::missing_crate_level_docs)] // it's an example
 
-use eframe::egui::{self, ViewportCommand};
+use std::sync::mpsc::{Receiver, Sender};
+use eframe::egui::{self, Theme, ViewportCommand,
+                  Color32, Stroke, Style, global_theme_preference_buttons, style::Selection,
+};
+use egui_demo_lib::{View as _, WidgetGallery};
 
 fn main() -> eframe::Result {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
-    let options = eframe::NativeOptions {
+    /*let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_decorations(false) // Hide the OS-specific "chrome" around the window
-            .with_inner_size([400.0, 100.0])
-            .with_min_inner_size([400.0, 100.0])
+            .with_inner_size([900.0, 600.0])
+            .with_min_inner_size([870.0, 370.0])
+            .with_resizable(true)
             .with_transparent(true), // To have rounded corners we need transparency
 
         ..Default::default()
+    };*/
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([350.0, 590.0]),
+        ..Default::default()
     };
     eframe::run_native(
-        "Custom window frame", // unused title
+        "Выборочное издание", // unused title
         options,
-        Box::new(|_cc| Ok(Box::<MyApp>::default())),
+        Box::new(|cc| Ok(Box::new(Введение::new(cc)))),
     )
+    /*println!("поехало");
+    println!("поехало2");*/
 }
 
-#[derive(Default)]
-struct MyApp {}
 
-impl eframe::App for MyApp {
+
+fn setup_custom_style(ctx: &egui::Context) {
+    ctx.style_mut_of(Theme::Light, use_light_green_accent);
+    ctx.style_mut_of(Theme::Dark, use_dark_purple_accent);
+}
+
+fn use_light_green_accent(style: &mut Style) {
+    style.visuals.hyperlink_color = Color32::from_rgb(18, 180, 85);
+    style.visuals.text_cursor.stroke.color = Color32::from_rgb(28, 92, 48);
+    style.visuals.selection = Selection {
+        bg_fill: Color32::from_rgb(157, 218, 169),
+        stroke: Stroke::new(1.0, Color32::from_rgb(28, 92, 48)),
+    };
+}
+
+fn use_dark_purple_accent(style: &mut Style) {
+    style.visuals.hyperlink_color = Color32::from_rgb(202, 135, 227);
+    style.visuals.text_cursor.stroke.color = Color32::from_rgb(234, 208, 244);
+    style.visuals.selection = Selection {
+        bg_fill: Color32::from_rgb(105, 67, 119),
+        stroke: Stroke::new(1.0, Color32::from_rgb(234, 208, 244)),
+    };
+}
+
+struct Введение {
+    name: String,
+    isp_count: u32,
+    age: u32,
+    range_7: String,
+    visible: bool,                 //видимость
+    complect_reveal: bool,         //раскрыть комплекты
+    bom_spec_rpt_path: String,     //путь до bom_spec.rpt
+    niisi_conceptlib_path: String, //путь до niisi_conceptlib
+    text: String,
+    main_status: String, //состояние
+    //файл
+    text_channel: (Sender<String>, Receiver<String>),
+    text_channel_2: (Sender<String>, Receiver<String>),
+    sample_text: String,
+    sample_text_2: String,
+    button_1:String,//кнопка проверка данных
+    button_2:String,//помощь
+    button_3:String,//новый проект
+    s1:String,//содержимое нижнего окна
+    //custom_collapsing_header: CustomCollapsingHeader,
+    en_button:bool,
+    widget_gallery: WidgetGallery,
+}
+
+impl Введение {
+    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        setup_custom_style(&cc.egui_ctx);
+        egui_extras::install_image_loaders(&cc.egui_ctx); // Needed for the "Widget Gallery" demo
+        Self {
+            widget_gallery: Default::default(),
+            // enabled: true,
+            visible: true,
+            range_7: "".to_string(),
+            name: "".to_string(),
+            isp_count: 1,
+            age: 1,
+            complect_reveal: false,
+            en_button:false,
+            bom_spec_rpt_path: r#"UNKNOWN"#.to_string(),
+            niisi_conceptlib_path: r#"C:\PCB\niisi_elberi\niisi_conceptlib\niisi_conceptlib_list.xls"#.to_string(),
+            text: "Нет текста".to_string(),
+            main_status: "ЗАПУСК".to_string(),
+            button_1:"Проверка данных".to_string(),
+            button_2:"Помощь".to_string(),
+            button_3:"Новый проект".to_string(),
+            //custom_collapsing_header: Default::default(),
+            // opacity: 1.0,
+            // boolean: false,
+            // radio: Enum::First,
+            // scalar: 42.0,
+            // string: Default::default(),
+            // color: egui::Color32::LIGHT_BLUE.linear_multiply(0.5),
+            // animate_progress_bar: false,
+            //  #[cfg(feature = "chrono")]
+            // date: None,
+            // #[cfg(feature = "chrono")]
+            // with_date_button: true,
+            //файл
+            text_channel: std::sync::mpsc::channel(),
+            text_channel_2: std::sync::mpsc::channel(),
+            sample_text: "This is some sample text".into(),
+            sample_text_2: "This is some sample text".into(),
+            s1:r#"Инициализация.
+- Файл конфигурации не найден, создан по умолчанию.
+- Настройка программы успешно завершена.
+- Настройки сохранены.
+Проверка исходных данных.
+- Файл BOM_spec.rpt успешно загружен.
+- Поиск PART_NUMBER по niisi_conceptlb_list.xls.
+- Поиск комплектов PART_NUMBER по niisi_conceptlb_list.xls.
+- Актуализация BOM_spec.rpt по базе компонентов выполнена успешно."#.to_string(),
+        }
+    }
+}
+
+impl eframe::App for Введение {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
+            ui.heading("egui using a customized style");
+            ui.label("Switch between dark and light mode to see the different styles in action.");
+            global_theme_preference_buttons(ui);
+            ui.separator();
+            self.widget_gallery.ui(ui);
+        });
+    }
+}
+/*
+impl eframe::App for Введение {
     fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
         egui::Rgba::TRANSPARENT.to_array() // Make sure we don't paint anything behind the rounded corners
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        custom_window_frame(ui, "egui with custom frame", |ui| {
+        custom_window_frame(ui, "egui избирательное показание", |ui| {
             ui.label("This is just the contents of the window.");
             ui.horizontal(|ui| {
                 ui.label("egui theme:");
@@ -165,3 +286,75 @@ fn close_maximize_minimize(ui: &mut egui::Ui) {
         ui.send_viewport_cmd(ViewportCommand::Minimized(true));
     }
 }
+impl Введение {
+    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        setup_custom_style(&cc.egui_ctx);
+        egui_extras::install_image_loaders(&cc.egui_ctx); // Needed for the "Widget Gallery" demo
+        Self {
+            widget_gallery: Default::default(),
+            // enabled: true,
+            visible: true,
+            range_7: "".to_string(),
+            name: "".to_string(),
+            isp_count: 1,
+            age: 1,
+            complect_reveal: false,
+            en_button:false,
+            bom_spec_rpt_path: r#"UNKNOWN"#.to_string(),
+            niisi_conceptlib_path: r#"C:\PCB\niisi_elberi\niisi_conceptlib\niisi_conceptlib_list.xls"#.to_string(),
+            text: "Нет текста".to_string(),
+            main_status: "ЗАПУСК".to_string(),
+            button_1:"Проверка данных".to_string(),
+            button_2:"Помощь".to_string(),
+            button_3:"Новый проект".to_string(),
+            //custom_collapsing_header: Default::default(),
+            // opacity: 1.0,
+            // boolean: false,
+            // radio: Enum::First,
+            // scalar: 42.0,
+            // string: Default::default(),
+            // color: egui::Color32::LIGHT_BLUE.linear_multiply(0.5),
+            // animate_progress_bar: false,
+            //  #[cfg(feature = "chrono")]
+            // date: None,
+            // #[cfg(feature = "chrono")]
+            // with_date_button: true,
+            //файл
+            text_channel: std::sync::mpsc::channel(),
+            text_channel_2: std::sync::mpsc::channel(),
+            sample_text: "This is some sample text".into(),
+            sample_text_2: "This is some sample text".into(),
+            s1:r#"Инициализация.
+- Файл конфигурации не найден, создан по умолчанию.
+- Настройка программы успешно завершена.
+- Настройки сохранены.
+Проверка исходных данных.
+- Файл BOM_spec.rpt успешно загружен.
+- Поиск PART_NUMBER по niisi_conceptlb_list.xls.
+- Поиск комплектов PART_NUMBER по niisi_conceptlb_list.xls.
+- Актуализация BOM_spec.rpt по базе компонентов выполнена успешно."#.to_string(),
+        }
+    }
+}
+
+fn setup_custom_style(ctx: &egui::Context) {
+    ctx.style_mut_of(Theme::Light, use_light_green_accent);
+    ctx.style_mut_of(Theme::Dark, use_dark_purple_accent);
+}
+
+fn use_light_green_accent(style: &mut Style) {
+    style.visuals.hyperlink_color = Color32::from_rgb(18, 180, 85);
+    style.visuals.text_cursor.stroke.color = Color32::from_rgb(28, 92, 48);
+    style.visuals.selection = Selection {
+        bg_fill: Color32::from_rgb(157, 218, 169),
+        stroke: Stroke::new(1.0, Color32::from_rgb(28, 92, 48)),
+    };
+}
+fn use_dark_purple_accent(style: &mut Style) {
+    style.visuals.hyperlink_color = Color32::from_rgb(202, 135, 227);
+    style.visuals.text_cursor.stroke.color = Color32::from_rgb(234, 208, 244);
+    style.visuals.selection = Selection {
+        bg_fill: Color32::from_rgb(105, 67, 119),
+        stroke: Stroke::new(1.0, Color32::from_rgb(234, 208, 244)),
+    };
+}*/

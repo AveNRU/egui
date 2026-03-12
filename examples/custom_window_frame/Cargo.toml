@@ -18,4 +18,4 @@ eframe = { workspace = true, features = [
 ] }
 env_logger = { workspace = true, features = ["auto-color", "humantime"] }
 [patch.crates-io]
-accesskit = "=0.21.1"
+accesskit = "*"

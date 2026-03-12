@@ -13,7 +13,7 @@ fn main() -> eframe::Result {
         ..Default::default()
     };
     eframe::run_native(
-        "egui example: custom style",
+        "egui пример: избирательный вывод",
         options,
         Box::new(|cc| Ok(Box::new(MyApp::new(cc)))),
     )
